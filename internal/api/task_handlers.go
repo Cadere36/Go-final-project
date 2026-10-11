@@ -40,6 +40,8 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 		updateTaskHandler(w, r)
 	case http.MethodGet:
 		getTaskHandler(w, r)
+	case http.MethodDelete:
+		deleteTaskHandler(w, r)
 
 	default:
 		writeJson(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
@@ -91,6 +93,57 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = db.UpdateTask(&task)
+	if err != nil {
+		writeJson(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJson(w, http.StatusOK, struct{}{})
+}
+
+func doneTaskHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJson(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		return
+	}
+	id := r.FormValue("id")
+	if id == "" {
+		writeJson(w, http.StatusBadRequest, map[string]string{"error": "id is required"})
+		return
+	}
+	task, err := db.GetTask(id)
+	if err != nil {
+		writeJson(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if task.Repeat == "" {
+		if err := db.DeleteTask(id); err != nil {
+			writeJson(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJson(w, http.StatusOK, struct{}{})
+		return
+	}
+
+	next, err := scheduler.NextDate(time.Now(), task.Date, task.Repeat)
+	if err != nil {
+		writeJson(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if err := db.UpdateDate(next, id); err != nil {
+		writeJson(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJson(w, http.StatusOK, struct{}{})
+}
+
+func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	if id == "" {
+		writeJson(w, http.StatusBadRequest, map[string]string{"error": "id is required"})
+		return
+	}
+
+	err := db.DeleteTask(id)
 	if err != nil {
 		writeJson(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
