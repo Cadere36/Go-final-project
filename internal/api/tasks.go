@@ -1,10 +1,11 @@
 package api
 
 import (
-	"go-final-project/internal/db"
-	"go-final-project/internal/scheduler"
 	"net/http"
 	"time"
+
+	"go-final-project/internal/db"
+	"go-final-project/internal/scheduler"
 )
 
 const tasksLimit = 50
@@ -14,6 +15,10 @@ type TasksResp struct {
 }
 
 func tasksHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeJson(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		return
+	}
 	search := r.FormValue("search")
 
 	var tasks []*db.Task

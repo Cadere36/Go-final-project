@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -20,7 +19,7 @@ func signingKey(password string) []byte {
 
 func GenerateToken(password string) (string, error) {
 
-	claims := jwt.MapClaims{"hash": hashPassword(password), "exp": time.Now().Add(8 * time.Hour).Unix()}
+	claims := jwt.MapClaims{"hash": hashPassword(password)}
 	signedToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(signingKey(password))
 	if err != nil {
 		return "", err

@@ -3,11 +3,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"go-final-project/internal/db"
-	"go-final-project/internal/scheduler"
 	"net/http"
 	"strconv"
 	"time"
+
+	"go-final-project/internal/db"
+	"go-final-project/internal/scheduler"
 )
 
 func addTaskHandler(w http.ResponseWriter, r *http.Request) {

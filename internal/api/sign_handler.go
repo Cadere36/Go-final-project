@@ -2,9 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"go-final-project/internal/auth"
 	"net/http"
-	"os"
+
+	"go-final-project/internal/auth"
 )
 
 func signHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,16 +20,15 @@ func signHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pass := os.Getenv("TODO_PASSWORD")
-	if pass == "" {
+	if password == "" {
 		writeJson(w, http.StatusBadRequest, map[string]string{"error": "TODO_PASSWORD not set"})
 		return
 	}
-	if req.Password != pass {
+	if req.Password != password {
 		writeJson(w, http.StatusUnauthorized, map[string]string{"error": "неверный пароль"})
 		return
 	}
-	token, err := auth.GenerateToken(pass)
+	token, err := auth.GenerateToken(password)
 	if err != nil {
 		writeJson(w, http.StatusInternalServerError, map[string]string{"error": "token generation failed"})
 		return
@@ -40,15 +39,14 @@ func signHandler(w http.ResponseWriter, r *http.Request) {
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		pass := os.Getenv("TODO_PASSWORD")
-		if len(pass) > 0 {
+		if len(password) > 0 {
 			var token string
 
 			cookie, err := r.Cookie("token")
 			if err == nil {
 				token = cookie.Value
 			}
-			if !auth.ValidateToken(token, pass) {
+			if !auth.ValidateToken(token, password) {
 
 				http.Error(w, "Authentification required", http.StatusUnauthorized)
 				return

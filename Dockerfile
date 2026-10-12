@@ -6,11 +6,10 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o scheduler .
 
-FROM ubuntu:latest
+FROM alpine:3.22
 WORKDIR /app
 COPY --from=builder /app/scheduler ./scheduler
 COPY --from=builder /app/web ./web
 ENV TODO_PORT=7540
 ENV TODO_DBFILE=/data/scheduler.db
-EXPOSE 7540
 CMD ["./scheduler"]

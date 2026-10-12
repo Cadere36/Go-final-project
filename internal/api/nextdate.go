@@ -1,12 +1,17 @@
 package api
 
 import (
-	"go-final-project/internal/scheduler"
 	"net/http"
 	"time"
+
+	"go-final-project/internal/scheduler"
 )
 
 func nextDayHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeText(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
 
 	nowStr := r.FormValue("now")
 	date := r.FormValue("date")
@@ -19,17 +24,15 @@ func nextDayHandler(w http.ResponseWriter, r *http.Request) {
 		var err error
 		now, err = time.Parse(scheduler.DateFormat, nowStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(err.Error()))
+			writeText(w, http.StatusBadRequest, err.Error())
 			return
 		}
 	}
 
 	next, err := scheduler.NextDate(now, date, repeat)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		writeText(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	w.Write([]byte(next))
+	writeText(w, http.StatusOK, next)
 }

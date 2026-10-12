@@ -26,10 +26,12 @@ func Init(dbFile string) error {
 		return err
 	}
 	if err := DB.Ping(); err != nil {
+		DB.Close()
 		return err
 	}
 	_, err = DB.Exec(schema)
 	if err != nil {
+		DB.Close()
 		return err
 	}
 	return nil

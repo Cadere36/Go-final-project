@@ -2,21 +2,18 @@ package server
 
 import (
 	"fmt"
-	"go-final-project/internal/api"
 	"net/http"
-	"os"
+
+	"go-final-project/internal/api"
+	"go-final-project/internal/config"
 )
 
-func RunServer() error {
-	httpPort := os.Getenv("TODO_PORT")
-	if httpPort == "" {
-		httpPort = "7540"
-	}
+func RunServer(cfg config.Config) error {
 
 	http.Handle("/", http.FileServer(http.Dir("./web/")))
 
-	api.Init()
+	api.Init(cfg.Password)
 
-	fmt.Println("Сервер запущен на http://localhost:" + httpPort)
-	return http.ListenAndServe(":"+httpPort, nil)
+	fmt.Println("Сервер запущен на http://localhost:" + cfg.Port)
+	return http.ListenAndServe(":"+cfg.Port, nil)
 }

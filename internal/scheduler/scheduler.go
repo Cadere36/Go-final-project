@@ -52,7 +52,9 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-
+		if afterNow(now, date) {
+			date = now
+		}
 		for {
 			date = date.AddDate(0, 0, 1)
 			wd := int(date.Weekday())
@@ -81,6 +83,9 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 			for i := 1; i <= 12; i++ {
 				months[i] = true
 			}
+		}
+		if afterNow(now, date) {
+			date = now
 		}
 		for i := 0; i < 3650; i++ {
 			date = date.AddDate(0, 0, 1)

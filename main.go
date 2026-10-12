@@ -1,32 +1,30 @@
 package main
 
 import (
-	"go-final-project/internal/db"
-	"go-final-project/internal/server"
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
+	"go-final-project/internal/config"
+	"go-final-project/internal/db"
+	"go-final-project/internal/server"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
+	if err := run(); err != nil {
+		log.Println(err)
+		os.Exit(1)
 	}
+}
 
-	dbPath := os.Getenv("TODO_DBFILE")
-	if dbPath == "" {
-		dbPath = "scheduler.db"
-	}
+func run() error {
+	cfg := config.Load()
 
-	err = db.Init(dbPath)
+	err := db.Init(cfg.DBFile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.DB.Close()
 
-	if err := server.RunServer(); err != nil {
-		log.Fatal(err)
-	}
+	return server.RunServer(cfg)
+
 }
